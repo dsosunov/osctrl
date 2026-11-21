@@ -118,6 +118,11 @@ export function NodeFileExplorerTab({ env, uuid }: { env: string; uuid: string }
     }
   }, [env, runRequest, updateLoadingPath]);
 
+  const loadDirectoryRef = useRef(loadDirectory);
+  useEffect(() => {
+    loadDirectoryRef.current = loadDirectory;
+  }, [loadDirectory]);
+
   const statEntry = useCallback(async (entry: FileExplorerEntry) => {
     const activeSession = sessionRef.current;
     if (!activeSession) return;
@@ -143,7 +148,7 @@ export function NodeFileExplorerTab({ env, uuid }: { env: string; uuid: string }
         setSession(created.session);
         setExpanded(new Set([created.session.root]));
         setPrimingRequest(created.priming ?? null);
-        void loadDirectory(created.session, created.session.root);
+        void loadDirectoryRef.current(created.session, created.session.root);
       })
       .catch((createError: unknown) => {
         if (!alive) return;
@@ -156,7 +161,7 @@ export function NodeFileExplorerTab({ env, uuid }: { env: string; uuid: string }
         void closeFileExplorerSession(env, current.id).catch(() => undefined);
       }
     };
-  }, [env, loadDirectory, uuid]);
+  }, [env, uuid]);
 
   // Poll the priming metadata request until it reaches a terminal
   // status, then fetch its osquery_info rows and surface live metadata
